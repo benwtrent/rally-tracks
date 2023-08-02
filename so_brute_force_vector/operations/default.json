@@ -1,0 +1,50 @@
+{
+  "name": "script-score-match-all",
+  "operation-type": "search",
+  "param-source": "knn-param-source",
+  "k": 10
+},
+{
+  "name": "script-score-java",
+  "operation-type": "search",
+  "param-source": "knn-param-source",
+  "k": 10,
+  "filter": {
+    "terms": {
+       "tags": ["java"]
+    }
+  }
+},
+{
+  "name": "script-score-css",
+  "operation-type": "search",
+  "param-source": "knn-param-source",
+  "k": 10,
+  "filter": {
+    "terms": {
+       "tags": ["css"]
+    }
+  }
+},
+{
+  "name": "script-score-concurrency",
+  "operation-type": "search",
+  "param-source": "knn-param-source",
+  "k": 10,
+  "filter": {
+    "terms": {
+       "tags": ["concurrency"]
+    }
+  }
+},
+{
+  "name": "script-score-query-javascript",
+  "operation-type": "search",
+  "param-source": "knn-param-source",
+  "k": 10,
+  "filter": {
+    "terms": {
+       "tags": ["javascript"]
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "settings": {
+    "index.number_of_shards": {{number_of_shards | default(2)}},
+    "index.number_of_replicas": {{number_of_replicas | default(0)}},
+    "sort.field": "tags", 
+    "sort.order": "desc"  
+  },
+  "mappings": {
+    "_source": {
+      "excludes": ["titleVector"]
+    },
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "tags": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "questionId": {
+        "type": "keyword"
+      },
+      "creationDate": {
+        "type": "date"
+      },
+      "title": {
+        "type": "text"
+      },
+      "titleVector": {
+        "type": "dense_vector",
+        "dims" : 768
+      },
+      "acceptedAnswerId": {
+        "type": "keyword"
+      },
+      "body": {
+        "type": "text"
+      }
+    }
+  }
+}
