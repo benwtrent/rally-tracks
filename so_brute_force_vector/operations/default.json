@@ -5,46 +5,54 @@
   "k": 10
 },
 {
-  "name": "script-score-java",
+  "name": "script-score-1M",
   "operation-type": "search",
   "param-source": "knn-param-source",
   "k": 10,
   "filter": {
-    "terms": {
-       "tags": ["java"]
+    "range": {
+      "creationDate": {
+        "lte": "2010-10-03T00:00:00.000Z"
+      }
     }
   }
 },
 {
-  "name": "script-score-css",
+  "name": "script-score-100k",
   "operation-type": "search",
   "param-source": "knn-param-source",
   "k": 10,
   "filter": {
-    "terms": {
-       "tags": ["css"]
+    "range": {
+      "creationDate": {
+        "lte": "2009-01-01T00:00:00.000Z"
+      }
     }
   }
 },
 {
-  "name": "script-score-concurrency",
+  "name": "script-score-10k",
   "operation-type": "search",
   "param-source": "knn-param-source",
   "k": 10,
   "filter": {
-    "terms": {
-       "tags": ["concurrency"]
+    "range": {
+      "creationDate": {
+        "lte": "2008-09-11T00:00:00.000Z"
+      }
     }
   }
 },
 {
-  "name": "script-score-query-javascript",
+  "name": "script-score-1k",
   "operation-type": "search",
   "param-source": "knn-param-source",
   "k": 10,
   "filter": {
-    "terms": {
-       "tags": ["javascript"]
+    "range": {
+      "creationDate": {
+        "lte": "2008-08-09T00:00:00.000Z"
+      }
     }
   }
 }

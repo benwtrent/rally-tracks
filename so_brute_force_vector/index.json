@@ -2,8 +2,8 @@
   "settings": {
     "index.number_of_shards": {{number_of_shards | default(2)}},
     "index.number_of_replicas": {{number_of_replicas | default(0)}},
-    "sort.field": "tags", 
-    "sort.order": "desc"  
+    "sort.field": "creationDate", 
+    "sort.order": "asc"  
   },
   "mappings": {
     "_source": {

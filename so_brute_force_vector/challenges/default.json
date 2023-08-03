@@ -48,22 +48,29 @@
       "clients": 1
     },
     {
-      "name": "script-score-java",
-      "operation": "script-score-java",
+      "name": "script-score-1M",
+      "operation": "script-score-1M",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
     },
     {
-      "name": "script-score-css",
-      "operation": "script-score-css",
+      "name": "script-score-100k",
+      "operation": "script-score-100k",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
     },
     {
-      "name": "script-score-concurrency",
-      "operation": "script-score-concurrency",
+      "name": "script-score-10k",
+      "operation": "script-score-10k",
+      "warmup-iterations": 100,
+      "iterations": 100,
+      "clients": 1
+    },
+    {
+      "name": "script-score-1k",
+      "operation": "script-score-1k",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
@@ -88,22 +95,29 @@
       "clients": 1
     },
     {
-      "name": "script-score-java-force-merge",
-      "operation": "script-score-java",
+      "name": "script-score-1M-force-merge",
+      "operation": "script-score-1M",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
     },
     {
-      "name": "script-score-css-force-merge",
-      "operation": "script-score-css",
+      "name": "script-score-100k-force-merge",
+      "operation": "script-score-100k",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
     },
     {
-      "name": "script-score-concurrency-force-merge",
-      "operation": "script-score-concurrency",
+      "name": "script-score-10k-force-merge",
+      "operation": "script-score-10k",
+      "warmup-iterations": 100,
+      "iterations": 100,
+      "clients": 1
+    },
+    {
+      "name": "script-score-1k-force-merge",
+      "operation": "script-score-1k",
       "warmup-iterations": 100,
       "iterations": 100,
       "clients": 1
