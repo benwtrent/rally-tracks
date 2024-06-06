@@ -16,10 +16,10 @@ class RandomBulkParamSource(ParamSource):
 
         bulk_data = []
         for _ in range(self._bulk_size):
-            vec = np.random.rand(self._dims)
-            partition_id = random.randint(0, self._partitions)
-            bulk_data.append({"index": {"_index": self._index_name, "routing": partition_id}})
-            bulk_data.append({"partition_id": partition_id, "emb": vec.tolist()})
+            # generate a random byte array of length `dims`
+            vec = np.random.bytes(self._dims).hex()
+            bulk_data.append({"index": {"_index": self._index_name}})
+            bulk_data.append({"emb": vec})
 
         return {
             "body": bulk_data,
@@ -47,8 +47,8 @@ def generate_script_query(query_vector, partition_id):
     return {
         "query": {
             "script_score": {
-                "query": {"term": {"partition_id": partition_id}},
-                "script": {"source": "cosineSimilarity(params.query_vector, 'emb') + 1.0", "params": {"query_vector": query_vector}},
+                "query": {"match_all": {}},
+                "script": {"source": "(1024.0 - hamming(params.query_vector, 'emb'))/1024", "params": {"query_vector": query_vector}},
             }
         }
     }
@@ -78,7 +78,9 @@ class RandomSearchParamSource:
         import numpy as np
 
         partition_id = random.randint(0, self._partitions)
-        query_vec = np.random.rand(self._dims).tolist()
+        # Get unsigned bytes array of length `dims`
+        query_vec = list(np.random.bytes(self._dims))
+        query_vec = [x - 128 for x in query_vec]
         if self._script:
             query = generate_script_query(query_vec, partition_id)
         else:
