@@ -23,6 +23,7 @@ Partitions are named by tier (for example, `small-0`, `medium-3`, `large-1`). Du
 Partition selection and vector generation are non-deterministic across runs — this was also the case in prior versions. The former `partition_seed` parameter only controlled per-partition target sizes, not runtime document assignment. Since the new design derives tier weights from fixed range midpoints rather than per-partition sizes, `partition_seed` is no longer needed. Reproducibility comes from the statistical distribution (tier counts and size ranges), not from identical document sequences.
 
 The index is sorted by `partition_id` and can optionally be routed by `partition_id`, keeping each partition's data co-located.
+It can also run in `_slice` mode, where bulk action metadata sets `_slice` at index time and searches pass `_slice` as a top-level request parameter.
 
 ## Indexing
 
@@ -46,6 +47,8 @@ Each document indexed includes:
 The index is sorted by partition ID and can optionally be routed by partition ID.
 This ensures that vectors from the same partition are stored close together, improving the efficiency of filtered searches.
 
+When `use_slice` is enabled, each bulk action metadata line sets `_slice` to the partition ID and searches use `?_slice=<partition_id>` instead of a `partition_id` term filter.
+
 ## Search Operations
 
 Search tasks are broken up by partition tier to separately measure QPS and latency for small, medium, and large partitions:
@@ -54,7 +57,7 @@ Search tasks are broken up by partition tier to separately measure QPS and laten
 * `medium-partition-search`: Queries only medium-tier partitions
 * `large-partition-search`: Queries only large-tier partitions
 
-Each search phase filters by a randomly chosen partition ID within the tier and scores against a random query vector.
+Each search phase targets a randomly chosen partition ID within the tier and scores against a random query vector, either via a `partition_id` filter or via top-level `_slice` when `use_slice` is enabled.
 
 ## Nightly Benchmarking
 
@@ -86,6 +89,11 @@ This track accepts the following parameters with Rally 0.8.0+ using `--track-par
  - medium_partitions (default: 20): Number of medium partitions (10k–100k docs each).
  - large_partitions (default: 5): Number of large partitions (100k–1M docs each).
  - custom_routing (default: false): Enable routing by partition ID when the routing template is selected.
+ - use_slice (default: false): Enable slice mode by selecting the slice template (`index.slice.enabled: true`), indexing `_slice`, and sending `_slice` on search requests.
  - rescore_oversample (default: -1): `-1` uses the index default, `0` disables rescore, and values greater than `0` set an explicit oversample.
  - vector_index_element_type (default: "float"): Sets the dense_vector element type.
  - enable_experimental_features (default: false): Enables experimental dense vector features that may break backward compatibility.
+
+`use_slice` and `custom_routing` are mutually exclusive.
+When `use_slice` is enabled on a data stream, the template also enables `allow_custom_routing` because `_slice` is internally carried via routing.
+The slice template pins `index.sort.field` to `["_routing", "partition_id"]` so `bbq_disk` sliced indexing/search always has the required primary `_routing` index sort.

@@ -68,6 +68,8 @@ class GetThenKnnRunner:
             index=index,
             size=k,
             request_cache=request_cache,
+            source=False,
+            stored_fields="_none_",
             body={
                 "knn": {
                     "field": vector_field,
@@ -111,6 +113,8 @@ class LookupKnnRunner:
             index=index,
             size=k,
             request_cache=request_cache,
+            source=False,
+            stored_fields="_none_",
             body={
                 "knn": {
                     "field": vector_field,

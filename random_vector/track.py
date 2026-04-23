@@ -101,6 +101,9 @@ class RandomBulkParamSource(ParamSource):
         self._dims = params.get("dims", 128)
         self._paragraph_size = params.get("paragraph-size", 1)
         self._custom_routing = params.get("custom-routing", False)
+        self._use_slice = params.get("use-slice", False)
+        if self._custom_routing and self._use_slice:
+            raise ValueError("custom-routing and use-slice cannot both be enabled")
 
         small, medium, large = extract_partition_config(params)
         self._registry = PartitionRegistry(small, medium, large)
@@ -115,6 +118,8 @@ class RandomBulkParamSource(ParamSource):
             metadata = {"_index": self._index_name}
             if self._custom_routing:
                 metadata["routing"] = partition_id
+            if self._use_slice:
+                metadata["_slice"] = partition_id
             bulk_data.append({"create": metadata})
             doc = {"@timestamp": timestamp, "partition_id": partition_id}
             if self._paragraph_size > 1:
@@ -136,14 +141,15 @@ class RandomBulkParamSource(ParamSource):
         }
 
 
-def generate_knn_query(field_name, query_vector, partition_id, k, rescore_oversample):
+def generate_knn_query(field_name, query_vector, partition_id, k, rescore_oversample, add_partition_filter):
     knn_query = {
         "field": field_name,
         "query_vector": query_vector,
         "k": k,
         "num_candidates": k,
-        "filter": {"term": {"partition_id": partition_id}},
     }
+    if add_partition_filter:
+        knn_query["filter"] = {"term": {"partition_id": partition_id}}
 
     if rescore_oversample >= 0:
         knn_query["rescore_vector"] = {"oversample": rescore_oversample}
@@ -159,6 +165,7 @@ class RandomSearchParamSource:
         self._dims = params.get("dims", 128)
         self._top_k = params.get("k", 10)
         self._rescore_oversample = params.get("rescore-oversample", -1)
+        self._use_slice = params.get("use-slice", False)
 
         partition_tier = params.get("partition-tier", None)
         if partition_tier is not None:
@@ -188,8 +195,18 @@ class RandomSearchParamSource:
         else:
             partition_id = self._registry.pick_uniform()
         query_vec = np.random.rand(self._dims).tolist()
-        query = generate_knn_query(self._field, query_vec, partition_id, self._top_k, self._rescore_oversample)
-        return {"index": self._index_name, "cache": self._cache, "size": self._top_k, "body": query}
+        query = generate_knn_query(
+            self._field,
+            query_vec,
+            partition_id,
+            self._top_k,
+            self._rescore_oversample,
+            add_partition_filter=self._use_slice is False,
+        )
+        request = {"index": self._index_name, "cache": self._cache, "size": self._top_k, "body": query}
+        if self._use_slice:
+            request["request-params"] = {"_slice": partition_id}
+        return request
 
 
 def register(registry):

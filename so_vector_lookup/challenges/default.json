@@ -138,6 +138,22 @@
       "warmup-iterations": {{ warmup_iterations | default(100) }},
       "iterations": {{ iterations | default(100) }},
       "clients": 1
+    },
+    {
+      "name": "get-then-knn-10-100-multi-client-force-merge",
+      "tags": ["search-after-force-merge"],
+      "operation": "get-then-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": {{ search_clients | default(8) | int }}
+    },
+    {
+      "name": "lookup-knn-10-100-multi-client-force-merge",
+      "tags": ["search-after-force-merge"],
+      "operation": "lookup-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": {{ search_clients | default(8) | int }}
     }
       {% endif %}
     {%- endif -%}{# non-serverless-after-force-merge-marker-end #}
