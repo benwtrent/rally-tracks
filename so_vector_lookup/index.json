@@ -1,0 +1,49 @@
+{% set p_include_non_serverless_index_settings = (include_non_serverless_index_settings | default(build_flavor != "serverless")) %}
+
+{
+  "settings": {
+    {# non-serverless-index-settings-marker-start #}{%- if build_flavor != "serverless" or serverless_operator == true -%}
+      {% if p_include_non_serverless_index_settings %}
+    "index.number_of_shards": {{number_of_shards | default(2)}},
+    "index.number_of_replicas": {{number_of_replicas | default(0)}}{% if enable_experimental_features | default(false) %},
+    "index.dense_vector.experimental_features": true{% endif %}
+      {% endif %}
+    {%- endif -%}{# non-serverless-index-settings-marker-end #}
+  },
+  "mappings": {
+    "properties": {
+      "userId": {
+        "type": "keyword"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "questionId": {
+        "type": "long"
+      },
+      "creationDate": {
+        "type": "date"
+      },
+      "title": {
+        "type": "text"
+      },
+      "titleVector": {
+        "type": "dense_vector",
+        "element_type": {{ vector_index_element_type | default("float") | tojson }},
+        "dims" : 768,
+        "index" : true,
+        "similarity": "dot_product",
+        "index_options": {
+          "type": {{ vector_index_type | default("bbq_hnsw") | tojson }},
+          "on_disk_rescore": {{ vector_index_on_disk_rescore | default(false) | tojson }}
+        }
+      },
+      "acceptedAnswerId": {
+        "type": "keyword"
+      },
+      "body": {
+        "type": "text"
+      }
+    }
+  }
+}

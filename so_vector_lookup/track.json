@@ -1,0 +1,46 @@
+{% import "rally.helpers" as rally with context %}
+
+{% set p_include_force_merge = (include_force_merge | default(build_flavor != "serverless")) %}
+
+{
+  "version": 2,
+  "description": "Benchmark for StackOverflow vector lookup-based kNN",
+  "indices": [
+    {
+      "name": "vectors",
+      "body": "index.json"
+    }
+  ],
+  "corpora": [
+    {
+      "name": "so_vector_float",
+      "base-url": "https://rally-tracks.elastic.co/so_vector",
+      "documents": [
+        {
+          "source-file": "documents.json.bz2",
+          "document-count": 2000000,
+          "compressed-bytes": 13251386786,
+          "uncompressed-bytes": 34615467266
+        }
+      ]
+    },
+    {
+      "name": "so_vector_base64",
+      "base-url": "https://rally-tracks.elastic.co/so_vector",
+      "documents": [
+        {
+          "source-file": "documents_base64.json.bz2",
+          "document-count": 2000000,
+          "compressed-bytes": 6923163442,
+          "uncompressed-bytes": 10372026050
+        }
+      ]
+    }
+  ],
+  "operations": [
+    {{ rally.collect(parts="operations/*.json") }}
+  ],
+  "challenges": [
+    {{ rally.collect(parts="challenges/*.json") }}
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "name": "index-and-search",
+  "description": "Indexes vectors, then compares get+knn versus lookup-based knn",
+  "default": true,
+  "schedule": [
+    {
+      "tags": ["setup"],
+      "operation": {
+        "operation-type": "delete-index"
+      }
+    },
+    {
+      "tags": ["setup"],
+      "operation": {
+        "operation-type": "create-index"
+      }
+    },
+    {
+      "tags": ["health"],
+      "operation": {
+        "operation-type": "cluster-health",
+        "request-params": {
+          "wait_for_status": "green"
+        },
+        "retry-until-success": true
+      }
+    },
+    {
+      "name": "index-append",
+      "tags": ["index"],
+      "operation": {
+        "operation-type": "bulk",
+        "bulk-size": {{bulk_size | default(500)}},
+        "ingest-percentage": {{ingest_percentage | default(100)}},
+        "corpora": {{corpora | default("so_vector_float") | tojson }}
+      },
+      "warmup-time-period": {{ bulk_warmup | default(40) | int }},
+      "clients": {{bulk_indexing_clients | default(1)}}
+    },
+    {
+      "name": "refresh-after-index",
+      "tags": ["index"],
+      "operation": {
+        "operation-type": "refresh",
+        "request-timeout": 1000,
+        "include-in-reporting": true
+      }
+    },
+    {
+      "name": "wait-until-merges-finish",
+      "operation": {
+        "operation-type": "index-stats",
+        "index": "_all",
+        "condition": {
+          "path": "_all.total.merges.current",
+          "expected-value": 0
+        },
+        "retry-until-success": true,
+        "include-in-reporting": false
+      },
+      "tags": ["index"]
+    },
+    {
+      "name": "get-then-knn-10-100",
+      "tags": ["search"],
+      "operation": "get-then-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": 1
+    },
+    {
+      "name": "lookup-knn-10-100",
+      "tags": ["search"],
+      "operation": "lookup-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": 1
+    },
+    {
+      "name": "get-then-knn-10-100-multi-client",
+      "tags": ["search"],
+      "operation": "get-then-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": {{ search_clients | default(8) | int }}
+    },
+    {
+      "name": "lookup-knn-10-100-multi-client",
+      "tags": ["search"],
+      "operation": "lookup-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": {{ search_clients | default(8) | int }}
+    }
+    {# non-serverless-after-force-merge-marker-start #}{%- if build_flavor != "serverless" or serverless_operator == true -%}
+      {% if p_include_force_merge %}
+    ,
+    {
+      "tags": ["force-merge"],
+      "operation": {
+        "operation-type": "force-merge",
+        "max-num-segments": {{max_num_segments | default(1)}},
+        "request-timeout": {{force_merge_timeout | default(7200)}},
+        "include-in-reporting": true
+      }
+    },
+    {
+      "name": "refresh-after-force-merge",
+      "tags": ["force-merge"],
+      "operation": "refresh"
+    },
+    {
+      "name": "wait-until-force-merges-finish",
+      "operation": {
+        "operation-type": "index-stats",
+        "index": "_all",
+        "condition": {
+          "path": "_all.total.merges.current",
+          "expected-value": 0
+        },
+        "retry-until-success": true,
+        "include-in-reporting": false
+      },
+      "tags": ["force-merge"]
+    },
+    {
+      "name": "get-then-knn-10-100-force-merge",
+      "tags": ["search-after-force-merge"],
+      "operation": "get-then-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": 1
+    },
+    {
+      "name": "lookup-knn-10-100-force-merge",
+      "tags": ["search-after-force-merge"],
+      "operation": "lookup-knn-10-100",
+      "warmup-iterations": {{ warmup_iterations | default(100) }},
+      "iterations": {{ iterations | default(100) }},
+      "clients": 1
+    }
+      {% endif %}
+    {%- endif -%}{# non-serverless-after-force-merge-marker-end #}
+  ]
+}

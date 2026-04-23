@@ -1,0 +1,21 @@
+{
+  "name": "get-then-knn-10-100",
+  "operation-type": "get-then-knn",
+  "index": "vectors",
+  "field": "titleVector",
+  "k": 10,
+  "num_candidates": 100,
+  "lookup_pool_size": 1000,
+  "include-in-reporting": true
+},
+{
+  "name": "lookup-knn-10-100",
+  "operation-type": "lookup-knn",
+  "index": "vectors",
+  "lookup_index": "vectors",
+  "field": "titleVector",
+  "k": 10,
+  "num_candidates": 100,
+  "lookup_pool_size": 1000,
+  "include-in-reporting": true
+}
