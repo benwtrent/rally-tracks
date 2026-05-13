@@ -27,7 +27,7 @@
           "dims":  {{ dims | default(128) | tojson }},
           "similarity": "cosine",
           "index_options": {
-            "type": {{ vector_index_type | default("bbq_flat") | tojson }}
+            "type": {{ vector_index_type | default("bbq_disk") | tojson }}
           }
         },
         "nested": {
@@ -42,7 +42,7 @@
               "dims":  {{ dims | default(128) | tojson }},
               "similarity": "cosine",
               "index_options": {
-                "type": {{ vector_index_type | default("bbq_flat") | tojson }}
+                "type": {{ vector_index_type | default("bbq_disk") | tojson }}
               }
             }
           }

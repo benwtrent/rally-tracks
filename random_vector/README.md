@@ -88,6 +88,7 @@ This track accepts the following parameters with Rally 0.8.0+ using `--track-par
  - custom_routing (default: false): Enable routing by partition ID when the routing template is selected.
  - sliced (default: false): Use sliced mode with the sliced index template (`index-template-slice.json`), `_slice` bulk metadata, and `_search?_slice=<partition-id>` request params.
  - paragraph_size with sliced: `sliced:true` requires `paragraph_size:1` (nested vectors are not supported in sliced mode).
+ - base64_encode_vectors (default: false): Base64-pack dense vectors for both indexing and kNN query vectors before sending requests.
  - rescore_oversample (default: -1): `-1` uses the index default, `0` disables rescore, and values greater than `0` set an explicit oversample.
  - vector_index_element_type (default: "float"): Sets the dense_vector element type.
  - enable_experimental_features (default: false): Enables experimental dense vector features that may break backward compatibility.

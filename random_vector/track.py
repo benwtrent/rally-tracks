@@ -93,6 +93,21 @@ def extract_partition_config(params):
     return small, medium, large
 
 
+def create_vector_encoder(enabled):
+    if not enabled:
+        return None
+
+    try:
+        from elasticsearch.helpers import pack_dense_vector
+    except ImportError as e:
+        raise ImportError(
+            "base64-encode-vectors requires Elasticsearch Python client >= 9.3.0 "
+            "(missing elasticsearch.helpers.pack_dense_vector)"
+        ) from e
+
+    return pack_dense_vector
+
+
 class RandomBulkParamSource(ParamSource):
     def __init__(self, track, params, **kwargs):
         super().__init__(track, params, **kwargs)
@@ -102,6 +117,8 @@ class RandomBulkParamSource(ParamSource):
         self._paragraph_size = params.get("paragraph-size", 1)
         self._custom_routing = params.get("custom-routing", False)
         self._sliced = params.get("sliced", False)
+        self._base64_encode_vectors = params.get("base64-encode-vectors", False)
+        self._vector_encoder = create_vector_encoder(self._base64_encode_vectors)
 
         if self._sliced and self._paragraph_size > 1:
             raise ValueError("sliced cannot be used with paragraph-size > 1")
@@ -126,10 +143,16 @@ class RandomBulkParamSource(ParamSource):
             if self._paragraph_size > 1:
                 nested_vec = []
                 for i in range(self._paragraph_size):
-                    nested_vec.append({"emb": np.random.rand(self._dims).tolist(), "paragraph_id": i})
+                    vector = np.random.rand(self._dims).tolist()
+                    if self._vector_encoder is not None:
+                        vector = self._vector_encoder(vector)
+                    nested_vec.append({"emb": vector, "paragraph_id": i})
                 doc["nested"] = nested_vec
             else:
-                doc["emb"] = np.random.rand(self._dims).tolist()
+                vector = np.random.rand(self._dims).tolist()
+                if self._vector_encoder is not None:
+                    vector = self._vector_encoder(vector)
+                doc["emb"] = vector
             bulk_data.append(doc)
 
         return {
@@ -169,6 +192,8 @@ class RandomSearchParamSource:
         self._rescore_oversample = params.get("rescore-oversample", -1)
         self._sliced = params.get("sliced", False)
         self._paragraph_size = params.get("paragraph-size", 1)
+        self._base64_encode_vectors = params.get("base64-encode-vectors", False)
+        self._vector_encoder = create_vector_encoder(self._base64_encode_vectors)
 
         if self._sliced and self._paragraph_size > 1:
             raise ValueError("sliced cannot be used with paragraph-size > 1")
@@ -201,6 +226,8 @@ class RandomSearchParamSource:
         else:
             partition_id = self._registry.pick_uniform()
         query_vec = np.random.rand(self._dims).tolist()
+        if self._vector_encoder is not None:
+            query_vec = self._vector_encoder(query_vec)
         query = generate_knn_query(self._field, query_vec, partition_id, self._top_k, self._rescore_oversample, self._sliced)
         params = {"index": self._index_name, "cache": self._cache, "size": self._top_k, "body": query}
         if self._sliced:
