@@ -11,8 +11,7 @@
       "number_of_replicas": {{number_of_replicas | default(0)}},
       {%- endif -%}{# non-serverless-index-settings-marker-end #}
       "index.slice.enabled": true,
-      "index.dense_vector.experimental_features": true,
-      "index.sort.field": ["_routing", "partition_id"]
+      "index.dense_vector.experimental_features": true
     },
     "mappings": {
       "properties": {
