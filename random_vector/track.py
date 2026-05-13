@@ -101,6 +101,10 @@ class RandomBulkParamSource(ParamSource):
         self._dims = params.get("dims", 128)
         self._paragraph_size = params.get("paragraph-size", 1)
         self._custom_routing = params.get("custom-routing", False)
+        self._sliced = params.get("sliced", False)
+
+        if self._sliced and self._paragraph_size > 1:
+            raise ValueError("sliced cannot be used with paragraph-size > 1")
 
         small, medium, large = extract_partition_config(params)
         self._registry = PartitionRegistry(small, medium, large)
@@ -113,7 +117,9 @@ class RandomBulkParamSource(ParamSource):
         for _ in range(self._bulk_size):
             partition_id = self._registry.pick_weighted()
             metadata = {"_index": self._index_name}
-            if self._custom_routing:
+            if self._sliced:
+                metadata["_slice"] = partition_id
+            elif self._custom_routing:
                 metadata["routing"] = partition_id
             bulk_data.append({"create": metadata})
             doc = {"@timestamp": timestamp, "partition_id": partition_id}
@@ -136,14 +142,16 @@ class RandomBulkParamSource(ParamSource):
         }
 
 
-def generate_knn_query(field_name, query_vector, partition_id, k, rescore_oversample):
+def generate_knn_query(field_name, query_vector, partition_id, k, rescore_oversample, sliced):
     knn_query = {
         "field": field_name,
         "query_vector": query_vector,
         "k": k,
         "num_candidates": k,
-        "filter": {"term": {"partition_id": partition_id}},
     }
+
+    if not sliced:
+        knn_query["filter"] = {"term": {"partition_id": partition_id}}
 
     if rescore_oversample >= 0:
         knn_query["rescore_vector"] = {"oversample": rescore_oversample}
@@ -159,6 +167,11 @@ class RandomSearchParamSource:
         self._dims = params.get("dims", 128)
         self._top_k = params.get("k", 10)
         self._rescore_oversample = params.get("rescore-oversample", -1)
+        self._sliced = params.get("sliced", False)
+        self._paragraph_size = params.get("paragraph-size", 1)
+
+        if self._sliced and self._paragraph_size > 1:
+            raise ValueError("sliced cannot be used with paragraph-size > 1")
 
         partition_tier = params.get("partition-tier", None)
         if partition_tier is not None:
@@ -188,8 +201,11 @@ class RandomSearchParamSource:
         else:
             partition_id = self._registry.pick_uniform()
         query_vec = np.random.rand(self._dims).tolist()
-        query = generate_knn_query(self._field, query_vec, partition_id, self._top_k, self._rescore_oversample)
-        return {"index": self._index_name, "cache": self._cache, "size": self._top_k, "body": query}
+        query = generate_knn_query(self._field, query_vec, partition_id, self._top_k, self._rescore_oversample, self._sliced)
+        params = {"index": self._index_name, "cache": self._cache, "size": self._top_k, "body": query}
+        if self._sliced:
+            params["request-params"] = {"_slice": partition_id}
+        return params
 
 
 def register(registry):

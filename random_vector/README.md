@@ -86,6 +86,8 @@ This track accepts the following parameters with Rally 0.8.0+ using `--track-par
  - medium_partitions (default: 20): Number of medium partitions (10k–100k docs each).
  - large_partitions (default: 5): Number of large partitions (100k–1M docs each).
  - custom_routing (default: false): Enable routing by partition ID when the routing template is selected.
+ - sliced (default: false): Use sliced mode with the sliced index template (`index-template-slice.json`), `_slice` bulk metadata, and `_search?_slice=<partition-id>` request params.
+ - paragraph_size with sliced: `sliced:true` requires `paragraph_size:1` (nested vectors are not supported in sliced mode).
  - rescore_oversample (default: -1): `-1` uses the index default, `0` disables rescore, and values greater than `0` set an explicit oversample.
  - vector_index_element_type (default: "float"): Sets the dense_vector element type.
  - enable_experimental_features (default: false): Enables experimental dense vector features that may break backward compatibility.

@@ -15,6 +15,7 @@
   "small-partitions": {{ small_partitions | default(100) | int }},
   "medium-partitions": {{ medium_partitions | default(20) | int }},
   "large-partitions": {{ large_partitions | default(5) | int }},
+  "sliced": {{ sliced | default(false) | tojson }},
   "custom-routing": {{ custom_routing | default(false) | tojson }},
   "bulk-size": {{ index_bulk_size | default(1000) | int}},
   "paragraph-size": {{paragraph_size | default(1) | int}}
@@ -27,6 +28,8 @@
   "small-partitions": {{ small_partitions | default(100) | int }},
   "medium-partitions": {{ medium_partitions | default(20) | int }},
   "large-partitions": {{ large_partitions | default(5) | int }},
+  "sliced": {{ sliced | default(false) | tojson }},
+  "paragraph-size": {{ paragraph_size | default(1) | int }},
   "rescore-oversample": {{ rescore_oversample | default(-1) | int }},
     {%- if paragraph_size | default(1) | int > 1 -%}
   "field": "nested.emb"
@@ -40,6 +43,8 @@
   "param-source": "knn-param-source",
   "dims": {{ dims | default(128) | int }},
   "small-partitions": {{ small_partitions | default(100) | int }},
+  "sliced": {{ sliced | default(false) | tojson }},
+  "paragraph-size": {{ paragraph_size | default(1) | int }},
   "partition-tier": "small",
   "rescore-oversample": {{ rescore_oversample | default(-1) | int }},
     {%- if paragraph_size | default(1) | int > 1 -%}
@@ -54,6 +59,8 @@
   "param-source": "knn-param-source",
   "dims": {{ dims | default(128) | int }},
   "medium-partitions": {{ medium_partitions | default(20) | int }},
+  "sliced": {{ sliced | default(false) | tojson }},
+  "paragraph-size": {{ paragraph_size | default(1) | int }},
   "partition-tier": "medium",
   "rescore-oversample": {{ rescore_oversample | default(-1) | int }},
     {%- if paragraph_size | default(1) | int > 1 -%}
@@ -68,6 +75,8 @@
   "param-source": "knn-param-source",
   "dims": {{ dims | default(128) | int }},
   "large-partitions": {{ large_partitions | default(5) | int }},
+  "sliced": {{ sliced | default(false) | tojson }},
+  "paragraph-size": {{ paragraph_size | default(1) | int }},
   "partition-tier": "large",
   "rescore-oversample": {{ rescore_oversample | default(-1) | int }},
     {%- if paragraph_size | default(1) | int > 1 -%}
